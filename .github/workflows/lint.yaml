@@ -25,24 +25,6 @@ jobs:
         run: |
           gh pr checkout "$PR_NUMBER"
 
-      - name: Download justfile and seccomp profile
-        shell: python
-        run: |
-          import urllib3, os
-          http = urllib3.PoolManager()
-          base_url = "https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/"
-          files = {"justfile": ".flathub.justfile", "flatpak.seccomp.json": "flatpak.seccomp.json"}
-          for f, t in files.items():
-            url = base_url + f
-            r = http.request('GET', url)
-            open(t, 'wb').write(r.data) if r.status == 200 else exit(1)
-
       - name: Validate manifest
         run: |
-          docker run --rm \
-            --security-opt seccomp=flatpak.seccomp.json \
-            -v "${GITHUB_WORKSPACE}:/work" \
-            -w /work \
-            -e GITHUB_ACTIONS \
-            ghcr.io/flathub-infra/flatpak-builder-lint:unprivileged \
-            just -f .flathub.justfile validate-manifest .
+          docker run -v $(pwd):/mnt --rm -it ghcr.io/flathub/flatpak-builder-lint:latest manifest /mnt/com.jetbrains.WebStorm.yaml

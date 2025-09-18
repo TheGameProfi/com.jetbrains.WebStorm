@@ -27,4 +27,4 @@ jobs:
 
       - name: Validate manifest
         run: |
-          docker run -v $(pwd):/mnt --rm -it ghcr.io/flathub/flatpak-builder-lint:latest manifest /mnt/com.jetbrains.WebStorm.yaml
+          docker run -v $(pwd):/mnt --rm ghcr.io/flathub/flatpak-builder-lint:latest manifest /mnt/com.jetbrains.WebStorm.yaml

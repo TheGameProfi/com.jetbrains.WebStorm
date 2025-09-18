@@ -1,0 +1,63 @@
+name: Build pipeline
+
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download justfile and seccomp profile
+        run: |
+          curl -sL -o .flathub.justfile https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/justfile
+          curl -sL -o flatpak.seccomp.json https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/flatpak.seccomp.json
+
+      - name: Validate manifest
+        run: |
+          docker run --rm \
+            --entrypoint="" \
+            --security-opt seccomp=$PWD/flatpak.seccomp.json \
+            -v "$PWD:/work" \
+            -w /work \
+            -e TMPDIR=/work/tmp \
+            ghcr.io/flathub-infra/flatpak-builder-lint:unprivileged \
+            just -f .flathub.justfile validate-manifest $(basename $PWD)
+
+  build-and-release:
+    needs: validate-manifest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download justfile and seccomp profile
+        run: |
+          curl -sL -o .flathub.justfile https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/justfile
+          curl -sL -o flatpak.seccomp.json https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/flatpak.seccomp.json
+
+      - name: Build Flatpak
+        run: |
+          mkdir -p build
+          docker run --rm \
+            --entrypoint="" \
+            --security-opt seccomp=$PWD/flatpak.seccomp.json \
+            -v "$PWD:/work" \
+            -w /work \
+            -e TMPDIR=/work/tmp \
+            ghcr.io/flathub-infra/flatpak-builder-lint:unprivileged \
+            just -f .flathub.justfile build $(basename $PWD) HEAD x86_64
+
+      - name: Upload artifact to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/*.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

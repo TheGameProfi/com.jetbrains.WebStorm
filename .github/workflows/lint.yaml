@@ -1,0 +1,44 @@
+name: Validate Flatpak Manifest
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull Request number'
+        required: true
+        type: string
+
+jobs:
+  validate-manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (PR event)
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Checkout code (manual)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          ref: refs/pull/${{ inputs.pr_number }}/merge
+
+      - name: Download justfile and seccomp profile
+        run: |
+          curl -sL -o .flathub.justfile https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/justfile
+          curl -sL -o flatpak.seccomp.json https://raw.githubusercontent.com/flathub-infra/vorarbeiter/refs/heads/main/flatpak.seccomp.json
+
+      - name: Validate manifest
+        run: |
+          docker run --rm \
+            --entrypoint="" \
+            --security-opt seccomp=$PWD/flatpak.seccomp.json \
+            -v "$PWD:/work" \
+            -w /work \
+            -e TMPDIR=/work/tmp \
+            ghcr.io/flathub-infra/flatpak-builder-lint:unprivileged \
+            just -f .flathub.justfile validate-manifest $(basename $PWD)

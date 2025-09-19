@@ -40,6 +40,9 @@
   <update_contact>sakcheen+flathub_AT_gmail.com</update_contact>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="2025.2.2" date="2025-09-18">
+      <description></description>
+    </release>
     <release version="2025.2.1" date="2025-08-29">
       <url type="details">https://blog.jetbrains.com/idea/2025/08/intellij-webstorm-2025-2-1/</url>
       <description>

@@ -41,7 +41,16 @@
   <content_rating type="oars-1.1"/>
   <releases>
     <release version="2025.2.2" date="2025-09-18">
-      <description></description>
+      <url type="details">https://youtrack.jetbrains.com/articles/WEB-A-233538660/WebStorm-2025.2.2-252.26199.162-build-Release-Notes</url>
+      <description>
+          <ul>
+              <li>Fixed: CSS Modules support in React projects now works as expected.</li>
+              <li>Improved: TypeScript type resolution performance and correctness.</li>
+              <li>Fixed: ESLint now properly finds config files in monorepos.</li>
+              <li>Improved: Better support for Vue 3 syntax and features.</li>
+              <li>Fixed: Debugger reliability for Node.js projects.</li>
+          </ul>
+      </description>
     </release>
     <release version="2025.2.1" date="2025-08-29">
       <url type="details">https://blog.jetbrains.com/idea/2025/08/intellij-webstorm-2025-2-1/</url>
